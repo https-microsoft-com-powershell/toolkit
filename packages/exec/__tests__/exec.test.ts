@@ -572,6 +572,42 @@ describe('@actions/exec', () => {
       )
     })
 
+    it('execs .cmd from path (Windows)', async () => {
+      // this test validates whether a .cmd is resolved from the PATH when the extension is not specified
+      const cmd = 'print-args-cmd' // note, not print-args-cmd.cmd
+      const cmdPath = path.join(__dirname, 'scripts', `${cmd}.cmd`)
+      const args: string[] = ['my arg 1', 'my arg 2']
+      const outStream = new StringStream()
+      let output = ''
+      const options = {
+        outStream: <stream.Writable>outStream,
+        listeners: {
+          stdout: (data: Buffer) => {
+            output += data.toString()
+          }
+        }
+      }
+
+      const originalPath = process.env['Path']
+      try {
+        process.env['Path'] = `${originalPath};${path.dirname(cmdPath)}`
+        const exitCode = await exec.exec(`${cmd}`, args, options)
+        expect(exitCode).toBe(0)
+        expect(outStream.getContents().split(os.EOL)[0]).toBe(
+          `[command]${
+            process.env.ComSpec
+          } /D /S /C "${cmdPath} "my arg 1" "my arg 2""`
+        )
+        expect(output.trim()).toBe(
+          'args[0]: "<quote>my arg 1<quote>"\r\n' +
+            'args[1]: "<quote>my arg 2<quote>"'
+        )
+      } catch (err) {
+        process.env['Path'] = originalPath
+        throw err
+      }
+    })
+
     it('execs .cmd with arg quoting (Windows)', async () => {
       // this test validates .cmd quoting rules are applied, not the default libuv rules
       const cmdPath = path.join(

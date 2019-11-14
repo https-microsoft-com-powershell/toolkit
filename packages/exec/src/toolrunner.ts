@@ -3,6 +3,7 @@ import * as events from 'events'
 import * as child from 'child_process'
 import * as stream from 'stream'
 import * as im from './interfaces'
+import * as io from '@actions/io'
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -392,6 +393,8 @@ export class ToolRunner extends events.EventEmitter {
    * @returns   number
    */
   async exec(): Promise<number> {
+    this.toolPath = await io.which(this.toolPath, true)
+
     return new Promise<number>((resolve, reject) => {
       this._debug(`exec tool: ${this.toolPath}`)
       this._debug('arguments:')
