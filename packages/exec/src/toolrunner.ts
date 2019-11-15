@@ -402,16 +402,11 @@ export class ToolRunner extends events.EventEmitter {
         (IS_WINDOWS && this.toolPath.includes('\\')))
     ) {
       // prefer options.cwd if it is specified, however options.cwd may also need to be rooted
-      let rootPath
-      if (this.options.cwd) {
-        rootPath = ioUtil.isRooted(this.options.cwd)
-          ? this.options.cwd
-          : path.join(process.cwd(), this.options.cwd)
-      } else {
-        rootPath = process.cwd()
-      }
-
-      this.toolPath = path.join(rootPath, this.toolPath)
+      this.toolPath = path.resolve(
+        process.cwd(),
+        this.options.cwd || process.cwd(),
+        this.toolPath
+      )
     }
 
     // if the tool is only a file name, then resolve it from the PATH
