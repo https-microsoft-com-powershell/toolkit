@@ -395,16 +395,23 @@ export class ToolRunner extends events.EventEmitter {
    * @returns   number
    */
   async exec(): Promise<number> {
-    // root the path if it is unrooted and contains relative pathing
+    // root the tool path if it is unrooted and contains relative pathing
     if (
       !ioUtil.isRooted(this.toolPath) &&
       (this.toolPath.includes('/') ||
         (IS_WINDOWS && this.toolPath.includes('\\')))
     ) {
-      this.toolPath = path.join(
-        this.options.cwd || process.cwd(),
-        this.toolPath
-      )
+      // prefer options.cwd if it is specified, however options.cwd may also need to be rooted
+      let rootPath
+      if (this.options.cwd) {
+        rootPath = ioUtil.isRooted(this.options.cwd)
+          ? this.options.cwd
+          : path.join(process.cwd(), this.options.cwd)
+      } else {
+        rootPath = process.cwd()
+      }
+
+      this.toolPath = path.join(rootPath, this.toolPath)
     }
 
     // if the tool is only a file name, then resolve it from the PATH
