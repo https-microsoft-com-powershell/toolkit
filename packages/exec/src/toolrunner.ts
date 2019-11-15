@@ -1,9 +1,11 @@
 import * as os from 'os'
 import * as events from 'events'
 import * as child from 'child_process'
+import * as path from 'path'
 import * as stream from 'stream'
 import * as im from './interfaces'
 import * as io from '@actions/io'
+import * as ioUtil from '@actions/io/lib/io-util'
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -393,6 +395,20 @@ export class ToolRunner extends events.EventEmitter {
    * @returns   number
    */
   async exec(): Promise<number> {
+    // root the path if it is unrooted and contains relative pathing
+    if (
+      !ioUtil.isRooted(this.toolPath) &&
+      (this.toolPath.includes('/') ||
+        (IS_WINDOWS && this.toolPath.includes('\\')))
+    ) {
+      this.toolPath = path.join(
+        this.options.cwd || process.cwd(),
+        this.toolPath
+      )
+    }
+
+    // if the tool is only a file name, then resolve it from the PATH
+    // otherwise verify it exists (add extension on Windows if necessary)
     this.toolPath = await io.which(this.toolPath, true)
 
     return new Promise<number>((resolve, reject) => {
