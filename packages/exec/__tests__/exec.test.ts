@@ -146,7 +146,7 @@ describe('@actions/exec', () => {
     exitCode = await exec.exec(tool, args, execOptions)
 
     expect(exitCode).toBe(0)
-    let rootedTool = await io.which(tool, true)
+    const rootedTool = await io.which(tool, true)
     expect(outStream.getContents().split(os.EOL)[0]).toBe(
       `[command]${rootedTool} ${args.join(' ')}`
     )
@@ -450,7 +450,7 @@ describe('@actions/exec', () => {
     fs.unlinkSync(semaphorePath)
   })
 
-  it('Runs exec roots relative tool path using unrooted options.cwd', async () => {
+  it('Exec roots relative tool path using unrooted options.cwd', async () => {
     let exitCode: number
     let command: string
     if (IS_WINDOWS) {
@@ -482,7 +482,7 @@ describe('@actions/exec', () => {
     const toolPath = path.resolve(__dirname, execOptions.cwd, command)
     if (IS_WINDOWS) {
       expect(outStream.getContents().split(os.EOL)[0]).toBe(
-        `[command]${process.env.ComSpec} /D /S /C ""${toolPath}" hello world"`
+        `[command]${process.env.ComSpec} /D /S /C "${toolPath} hello world"`
       )
     } else {
       expect(outStream.getContents().split(os.EOL)[0]).toBe(
@@ -492,7 +492,7 @@ describe('@actions/exec', () => {
     expect(output.trim()).toBe(`args[0]: "hello"${os.EOL}args[1]: "world"`)
   })
 
-  it('Runs exec roots relative tool path using rooted options.cwd', async () => {
+  it('Exec roots relative tool path using rooted options.cwd', async () => {
     let command: string
     if (IS_WINDOWS) {
       command = './print-args-cmd' // let ToolRunner resolve the extension
@@ -510,13 +510,13 @@ describe('@actions/exec', () => {
       }
     }
 
-    let exitCode = await exec.exec(`${command} hello world`, [], execOptions)
+    const exitCode = await exec.exec(`${command} hello world`, [], execOptions)
 
     expect(exitCode).toBe(0)
     const toolPath = path.resolve(__dirname, execOptions.cwd, command)
     if (IS_WINDOWS) {
       expect(outStream.getContents().split(os.EOL)[0]).toBe(
-        `[command]${process.env.ComSpec} /D /S /C ""${toolPath}" hello world"`
+        `[command]${process.env.ComSpec} /D /S /C "${toolPath} hello world"`
       )
     } else {
       expect(outStream.getContents().split(os.EOL)[0]).toBe(
@@ -526,7 +526,7 @@ describe('@actions/exec', () => {
     expect(output.trim()).toBe(`args[0]: "hello"${os.EOL}args[1]: "world"`)
   })
 
-  it('Runs exec roots relative tool path using process.cwd', async () => {
+  it('Exec roots relative tool path using process.cwd', async () => {
     let exitCode: number
     let command: string
     if (IS_WINDOWS) {
@@ -557,7 +557,7 @@ describe('@actions/exec', () => {
     const toolPath = path.resolve(__dirname, command)
     if (IS_WINDOWS) {
       expect(outStream.getContents().split(os.EOL)[0]).toBe(
-        `[command]${process.env.ComSpec} /D /S /C ""${toolPath}" hello world"`
+        `[command]${process.env.ComSpec} /D /S /C "${toolPath} hello world"`
       )
     } else {
       expect(outStream.getContents().split(os.EOL)[0]).toBe(
